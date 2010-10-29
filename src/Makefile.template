@@ -1,0 +1,137 @@
+# You'll need a Bourne Shell, bash or ksh should work as well
+SHELL = /bin/sh
+
+OBJECTS =	\
+	checker.o \
+	client.o \
+	dnshelper-process.o \
+	dnshelper-thread.o \
+	main.o \
+	options.o \
+	peercache.o \
+	stats.o \
+	template.o \
+	uhc.o \
+	webcache.o \
+
+# Leave the above line empty
+
+INCLUDES =	\
+	checker.h \
+	client.h \
+	config.h \
+	dnshelper.h \
+	options.h \
+	peercache.h \
+	stats.h \
+	template.h \
+	uhc.h \
+	webcache.h \
+
+# Leave the above line empty
+
+LIB_SOURCES =	\
+	lib/acclog.c \
+	lib/base32.c \
+	lib/cobs.c \
+	lib/compat.c \
+	lib/connection.c \
+	lib/debug.c \
+	lib/dns.c \
+	lib/event_source.c \
+	lib/event_watcher.c \
+	lib/fifo.c \
+	lib/filter.c \
+	lib/ggep.c \
+	lib/guid.c \
+	lib/gwc.c \
+	lib/hashlist.c \
+	lib/hashtable.c \
+	lib/http.c \
+	lib/list.c \
+	lib/mem.c \
+	lib/mem_buf.c \
+	lib/nettools.c \
+	lib/node.c \
+	lib/peerlock.c \
+	lib/snode.c \
+
+# Leave the above line empty
+
+LIB_OBJECTS =	\
+	lib/acclog.o \
+	lib/base32.o \
+	lib/cobs.o \
+	lib/compat.o \
+	lib/connection.o \
+	lib/debug.o \
+	lib/dns.o \
+	lib/event_source.o \
+	lib/event_watcher.o \
+	lib/fifo.o \
+	lib/filter.o \
+	lib/ggep.o \
+	lib/guid.o \
+	lib/gwc.o \
+	lib/hashlist.o \
+	lib/hashtable.o \
+	lib/http.o \
+	lib/list.o \
+	lib/mem.o \
+	lib/mem_buf.o \
+	lib/nettools.o \
+	lib/node.o \
+	lib/peerlock.o \
+	lib/snode.o \
+
+# Leave the above line empty
+
+LIB_INCLUDES =	\
+	lib/acclog.h \
+	lib/base32.h \
+	lib/cobs.h \
+	lib/config.h \
+	lib/common.h \
+	lib/compat.h \
+	lib/connection.h \
+	lib/debug.h \
+	lib/dns.h \
+	lib/event_source.h \
+	lib/event_watcher.h \
+	lib/fifo.h \
+	lib/filter.h \
+	lib/ggep.h \
+	lib/guid.h \
+	lib/gwc.h \
+	lib/hashlist.h \
+	lib/hashtable.h \
+	lib/http.h \
+	lib/list.h \
+	lib/mem.h \
+	lib/mem_buf.h \
+	lib/nettools.h \
+	lib/node.h \
+	lib/oop.h \
+	lib/peerlock.h \
+	lib/snode.h \
+
+# Leave the above line empty
+
+all:	gwc	
+
+clean:
+	rm -f -- gwc $(OBJECTS)
+
+clobber: distclean
+
+distclean: clean
+
+lib::
+	cd lib && $(MAKE)
+
+gwc: $(INCLUDES) $(OBJECTS) $(LIB_SOURCES) $(LIB_INCLUDES) lib
+	$(CC) -o $@ $(OBJECTS) $(LIB_OBJECTS) $(LDFLAGS)
+
+install: gwc
+	mkdir -p "$(bin_dir)"; cp gwc "$(bin_dir)/"
+

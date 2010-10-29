@@ -1,0 +1,71 @@
+# You'll need a Bourne Shell, bash or ksh should work as well
+SHELL = /bin/sh
+
+OBJECTS =	\
+	acclog.o \
+	base32.o \
+	cobs.o \
+	compat.o \
+	connection.o \
+	debug.o \
+	dns.o \
+	event_source.o \
+	event_watcher.o \
+	fifo.o \
+	filter.o \
+	ggep.o \
+	guid.o \
+	gwc.o \
+	hashlist.o \
+	hashtable.o \
+	http.o \
+	list.o \
+	mem.o \
+	mem_buf.o \
+	nettools.o \
+	node.o \
+	peerlock.o \
+	snode.o \
+
+# Leave the above line empty
+
+INCLUDES =	\
+	acclog.h \
+	base32.h \
+	cobs.h \
+	config.h \
+	common.h \
+	compat.h \
+	connection.h \
+	debug.h \
+	dns.h \
+	event_source.h \
+	event_watcher.h \
+	fifo.h \
+	filter.h \
+	ggep.h \
+	guid.h \
+	gwc.h \
+	hashlist.h \
+	hashtable.h \
+	http.h \
+	list.h \
+	mem.h \
+	mem_buf.h \
+	nettools.h \
+	node.h \
+	oop.h \
+	peerlock.h \
+	snode.h \
+
+# Leave the above line empty
+
+all:	$(OBJECTS)
+
+clean:
+	rm -f -- $(OBJECTS)
+
+clobber: distclean
+
+distclean: clean
+

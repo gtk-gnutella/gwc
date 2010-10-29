@@ -1,0 +1,506 @@
+<HTML>
+
+<HEAD>
+<TITLE>Gnutella Web Caching System</TITLE>
+<LINK REL="STYLESHEET" TYPE="text/css" HREF="style.css">
+<META NAME="GENERATOR" CONTENT="Microsoft FrontPage 4.0">
+<META NAME="ProgId" CONTENT="FrontPage.Editor.Document">
+</HEAD>
+
+<BODY>
+
+<A NAME="top"></A>
+<H1>Gnutella Web Caching System</H1>
+
+<H2>Version 2 Specifications Client Developers' Guide</H2>
+
+<P><SMALL>Copyright (c) 2003 <A HREF="mailto:haukex@zero-g.net">Hauke Dämpfling</A>,
+<A HREF="#ChangeLog">version 1.9.4</A> / 18.6.2003, <A HREF="http://www.gnucleus.com/gwebcache/newgwc.html">http://www.gnucleus.com</SMALL><SMALL>/gwebcache/newgwc.html</SMALL></A></P>
+
+<H2>Table of Contents</H2>
+
+<UL>
+  <LI><A HREF="#Introduction">Introduction</A>
+  <LI><A HREF="#DevelopersGuide">Developers Guide</A>
+  <LI><A HREF="#ChangeLog">Change Log</A>
+</UL>
+
+<H2><A NAME="Introduction">Introduction</A></H2>
+
+<P>This document serves a guide for client developers that covers how to use the
+&quot;new&quot; GWebCache system (as according to the &quot;version 2
+specifications&quot;, also referred to as GWC2). <B>This document should be
+considered &quot;beta&quot;.</B> Clients and caches using these specs have not
+been thoroughly tested.</P>
+
+<P><B>GWebCache, even though it is designed for simplicity, will only work if
+several key functionalities are implemented by developers.</B> Therefore,
+developers, <B>read this document carefully</B>.</P>
+
+<P>To understand why this is so important: Because some clients had errors in
+their code, people who ran GWebCaches had (and may still have) much grief,
+because these clients relentlessly hammered away at the servers, in some cases
+even continuing to hammer servers' IP's when the virtual web servers were shut
+down. Such utter lack of responsibility in coding put many users in a situation
+that they could not escape from, and such a situation must not be repeated.</P>
+
+<P>Therefore, I hope that you understand why it is critical that you read and
+understand this <I>entire</I> document. And, when you get ready to release your
+shiny new client with GWebCache v2 functionality, you will <B>thoroughly test
+the interaction with a web cache before making any releases</B>.</P>
+
+<P>A bunch of <B>Thank Yous</B> for support of the GWebCache project with many
+ideas and code: John Marshall, Robert Rainwater, Guo Xu, Tor Klingberg,
+Christopher Rohrs, Mike Green, Nick Randall, ...</P>
+
+<P><B>If you have any questions, comments, suggestions, (constructive)
+criticisms, etc., please post them in the <A HREF="http://www.c0re.net/gnuforum/viewforum.php?f=7">Forum</A>
+right away.</B></P>
+
+<P><A HREF="#top">^ Top ^</A></P>
+
+<H2><A NAME="DevelopersGuide">Developers Guide</A></H2>
+
+<H3>Overview</H3>
+
+<P>A GWebCache is a script on a web server, clients use normal HTTP. It stores
+IP addresses of Gnutella nodes and the URLs of other caches. Clients (ultrapeers)
+make regular updates to GWCs to keep the information fresh.</P>
+
+<H3>Summary of Important Things to Remember</H3>
+
+Each of these points is described in more detail below.
+<UL>
+  <LI><B>Your client must use GWebCache only if it has no other way to discover
+    hosts.</B> First, use your Pong cache and such.
+  <LI><B>Your client may send updates <I>only</I> if it meets certain criteria.</B>
+    For example, it must accept incoming connections as an ultrapeer. More
+    details below.
+  <LI><B>In any case, your client must not send more than one request per hour.</B>
+    Your client will be rejected anyway, and you don't want to be rejected.
+  <LI><B>If your client fails to contact a cache, it must not request to that
+    cache again.</B> If a cache is down, it's down!
+</UL>
+
+<UL>
+  <LI><B>Remember that GWebCaches are run by volunteers in their own webspace.
+    Do not abuse the privilege to be able to access GWebCaches, as they have
+    limited CPU and Bandwidth resources. Don't DDoS your users and service
+    providers.</B>
+</UL>
+
+<H3>Step 1: How to store GWC data in your client</H3>
+
+<UL>
+  <LI>Keep an array of GWebCache URLs, and for each URL, store a flag as to
+    whether or not your client has successfully contacted this cache. The client
+    should forget this information when it exits and stores the information to
+    (for example) a text file, but your client must keep this information in
+    memory while running.
+  <LI><B>Do not</B> hardcode any cache URLs. Include a default list of GWCs with
+    your client, but do not hardcode the URLs.
+  <LI>You must <B>remove any clients from your list that do not respond
+    correctly</B>. More on this later.
+  <LI>Hosts will be returned in the standard numerical IP : port format (i.e.
+    123.45.67.8:123).
+  <LI>URLs <B>always</B> begin with <CODE>http://</CODE>
+  <LI>Before your client accepts new URLs into its internal list, <B>it must
+    make the following changes</B>:
+    <UL>
+      <LI>If the URL contains any %XX sequences where XX is a hex string (0-9,
+        a-z, A-Z), replace them by the ASCII character with the hex value (i.e.
+        %7E is ASCII character 0x7E, decimal 126, char &quot;<CODE>~</CODE>&quot;).
+      <LI>If the URL ends in &quot;index.EXT&quot; where EXT is any of the
+        following: &quot;php&quot;, &quot;cgi&quot;, &quot;asp&quot;, &quot;cfm&quot;,
+        &quot;jsp&quot; (this list is not complete), then trim this filename.
+        (For example <CODE>http://zero-g.net/gcache/index.cgi</CODE> becomes <CODE>http://zero-g.net/gcache/</CODE>)
+      <LI>Trim any trailing slashes (<CODE>/</CODE>). (For example <CODE>http://zero-g.net/gcache/</CODE>
+        becomes <CODE>http://zero-g.net/gcache</CODE>)
+      <LI>This check is encouraged: perform a DNS lookup of the web server you
+        are adding to your list and compare that IP address to those of the
+        servers already in the list. <I>Do not replace the webserver's hostname
+        with it's IP address</I>! This would screw up virtual servers very
+        badly. This check is meant to avoid ambiguities between hostnames that
+        have the same IP address. For example, both &quot;zero-g.net&quot; and
+        &quot;www.zero-g.net&quot; are working hostnames for the same site, but
+        this should not cause duplicate entries in your list of cache URLs.
+    </UL>
+
+</UL>
+
+<H3>Step 2: How to interact with GWebCaches</H3>
+
+<UL>
+  <LI><B>Your client must not exclusively rely on GWebCache.</B> Your client
+    must use its internal host cache (information gathered from Pongs) and X-Try
+    headers with priority above GWebCache.
+  <LI><B>Use a standard HTTP library.</B> GWebCaches are regular scripts on
+    regular web servers and therefore rely on your client understanding regular,
+    full HTTP. (For example, 3xx responses mean &quot;redirect&quot; and 4xx-5xx
+    means &quot;<B>error</B>&quot;.) <B>Make sure</B> that your HTTP libraries
+    provide a mechanism for identifying HTTP error codes.
+  <LI><B>Do not use HTTP proxies</B>. If the HTTP library you use uses proxies,
+    they should be disabled. (Scripts need to see the client's IP.)
+  <LI>This should not be an issue if you use standard HTTP libraries, but since
+    it's happened before: <B>make sure your libraries speak HTTP/1.1 and support
+    virtual hosts</B>. (For example, the &quot;Host:&quot; header.)
+  <LI>When you contact a GWebCache, you can get <B>four different kinds of
+    responses</B>, listed here. <B>If you get anything that is not a normal
+    GWebCache response, <U>delete that cache's URL from your internal list</U></B>.
+    <OL>
+      <LI>Normal GWebCache responses (described below)
+      <LI>GWebCache error (response begins with string &quot;ERROR&quot;)
+      <LI>Invalid response (not parseable)
+      <LI>HTTP error (HTTP codes 400 to 599)
+    </OL>
+
+  <LI><B>In all cases except the first, your client must forget about that
+    cache, and <U>do </U><U>not retry</U>.</B> Note that in <B>cases 2 and 3</B>,
+    the HTTP response code will still be 2xx (&quot;OK&quot;), <B>but these
+    responses still mean that the cache has had an error</B>. In other words, <B>only
+    when you can successfully parse the response did the request succeed</B>.
+  <LI>Note that, as defined below, a GWebCache will now <B>always output at
+    least one line</B> - this differs from the original GWebCache
+    specifications, which said that GWebCache may return an empty string. Now,
+    returning an <B>empty file is invalid</B> (note that &quot;empty file&quot;
+    means that there may still be one or more CRLF/CR/LFs in the file).
+  <LI>When contacting a web cache, pick a <B>random</B> cache from your internal
+    list of caches.
+  <LI><B><U>There is absolutely no reason to send more than one request per hour</U></B>.
+    Updates can be combined with Gets and Pings. Ideally, your client will make
+    one request at startup <I>only if </I><I>necessary</I> (more on this below),
+    and then only one update an hour <I>if it meets the </I><I>criteria</I>
+    (more on this below too).
+  <LI>Make sure your client can handle different end-of-line formats. Clients
+    and servers may be on different platforms so there is no guarantee as to
+    whether you will get CR, LF, or CRLF. As an example, here is some simple
+    logic for converting everything to LFs: If the returned file contains any
+    LFs, then remove all CRs, else replace all CRs by LFs.
+  <LI>Your client must supply version information to a GWebCache. This is done
+    via the &quot;client&quot; parameter. Version information is a 4-character
+    string of uppercase letters (your client's ID) plus a max of 16 characters
+    for the version number. (Examples: &quot;<CODE>GNUC1.8.4.0</CODE>&quot;,
+    &quot;<CODE>LIME2.7.9 Pro</CODE>&quot;)
+  <LI>IP Addresses must not begin with leading zeros, i.e. <I>not</I>&nbsp;
+    001.002.003.012 (this is dumb, and nobody does this anyway, but I just
+    wanted to be clear).
+  <LI>Your client will send requests via HTTP GET. This means that your request
+    will be:<BR>
+    [the cache's URL] + &quot;<CODE>?</CODE>&quot; + any number of the
+    following: [parameter name] + &quot;<CODE>=</CODE>&quot; + [escape-encoded
+    parameter value] + &quot;<CODE>&amp;</CODE>&quot; + [next parameter name] +
+    &quot;<CODE>=</CODE>&quot; + [escape-encoded value] etc.<BR>
+    The order of the parameters does not matter. Each parameter should appear
+    only once.
+  <LI>&quot;Escape Encoding&quot; (<A HREF="http://www.w3.org/Addressing/rfc1738.txt">RFC1738</A>)
+    means replacing all characters that are <I>not</I> letters, numbers, dashes
+    &quot;-&quot;, underscores &quot;_&quot;, or periods &quot;.&quot; with the
+    following: &quot;<CODE>%</CODE>&quot; + [2-character ASCII code of character
+    in Hex]<BR>
+    To make this replacement:<BR>
+    Step 1: replace all &quot;<CODE>%</CODE>&quot; by their representation:
+    &quot;<CODE>%25</CODE>&quot;<BR>
+    Step 2: replace all non-alphanumeric characters except &quot;<CODE>%</CODE>&quot;,
+    &quot;<CODE>-</CODE>&quot;, &quot;<CODE>_</CODE>&quot; and &quot;<CODE>.</CODE>&quot;
+    by a percent (<CODE>%</CODE>) sign followed by two hex digits.<BR>
+    Example: &quot;<CODE>http://www.zero-g.net/gcache/gcache.php</CODE>&quot;
+    becomes &quot;<CODE>http%3a%2f%2fwww.zero-g.net%2fgcache%2fgcache.php</CODE>&quot;
+  <LI><B>Example requests:</B>
+    <UL>
+      <LI><CODE>http://www.server.com/path/to/gcache.cgi?client=TEST1.0&amp;get=1</CODE>
+      <LI><CODE>http://www.server.com/path/to/gcache.cgi?client=TEST1.0&amp;update=1&amp;ip=194.64.64.1%3A123&amp;url=http%3a%2f%2fwww.otherserver.net%2fwebcache.cgi</CODE>
+    </UL>
+
+</UL>
+
+<H3>Step 3: GWebCache output format</H3>
+
+<UL>
+  <LI>Output of a GWebCache is in line-by-line format, according to the
+    following pattern:<BR>
+    <CODE>x|field1|field2|field3|...</CODE>
+  <LI>&quot;x&quot; can be either &quot;I&quot; = Informational, &quot;U&quot; =
+    URL, &quot;H&quot; = Host. So far, the following responses have been
+    defined:
+</UL>
+
+<UL>
+  <LI><CODE><B>I</B></CODE> - Informational Response
+    <UL>
+      <LI>field 1: <CODE><B>pong</B></CODE>
+        <UL>
+          <LI>field 2: (version string)<BR>
+            Included in response to a Ping request, returns GWebCache version
+        </UL>
+
+      <LI>field 1: <B><CODE>update</CODE></B>
+        <UL>
+          <LI>field 2: <B>OK<BR>
+            </B>Returned when the update completed successfully (but possibly
+            there were warnings!)
+          <LI>field 2: <B>WARNING<BR>
+            </B>field 3: &quot;You came back too early&quot;, &quot;Rejected
+            IP&quot; or &quot;Rejected URL&quot; (others may be added as needed)<BR>
+            A WARNING response to an update <B>generally means that your client
+            did something wrong</B>. Note that warnings can appear <I>in
+            addition to</I> an OK response.
+        </UL>
+
+      <LI>field 1: <CODE><B>nothing</B></CODE><BR>
+        Returned when there is no other output, so your client doesn't get
+        bored. (Actually, this is because GWC must always output at least one
+        line.)
+    </UL>
+
+  <LI><CODE><B>U</B></CODE> - URLs
+    <UL>
+      <LI>field 1: <CODE><B>URL</B></CODE><BR>
+        The URL of the alternate cache, beginning with http://
+      <LI>field 2: <CODE><B>age</B></CODE><BR>
+        The time since submission of this URL to the cache in seconds
+    </UL>
+
+  <LI><CODE><B>H</B></CODE> - Hosts
+    <UL>
+      <LI>field 1: <CODE><B>Host:Port</B></CODE><BR>
+        The Host:Port of a host
+      <LI>field 2: <CODE><B>age</B></CODE><BR>
+        The time since submission of this URL to the cache in seconds
+    </UL>
+
+</UL>
+
+<UL>
+  <LI>Your client should of course be prepared to expect any other responses, as
+    long as they are in the above format: they begin with a character (a-z, A-Z,
+    0-9), then a pipe (|), then any number of characters and pipes. Also make
+    sure your client can handle extensions to the above formats (for example,
+    expect to have more information following an &quot;<CODE>I|pong|</CODE>(version)&quot;
+    response, i.e. something like &quot;<CODE>I|pong|</CODE>(version)<CODE>|something|else</CODE>&quot;
+    etc.). In other words, your parser should be very general.
+  <LI>A GWebCache may also provide an extra HTTP header for your client,
+    &quot;X-Remote-IP&quot;. This header is analogous to the
+    &quot;Remote-IP&quot; header provided in the Gnutella handshaking protocol,
+    with the difference that <I>it cannot be trusted as much</I>. Trust the
+    Remote-IP header from Gnutella connections instead. X-Remote-IP is what the
+    web server thinks your IP address is, and this could be wrong due to
+    transparent proxies and the like.
+  <LI><B>Example responses:</B>
+    <UL>
+      <LI>Short response to a simple Get:<BR>
+        <CODE>H|127.0.0.2:321|400<BR>
+        H|127.0.0.1:123|4456<BR>
+        U|http://www.server2.com/gcache/gcache.cgi|400<BR>
+        U|http://www.server.net/gcache/gcache.cgi|4456</CODE>
+      <LI>Response to an update combined with a ping:<BR>
+        <CODE>I|pong|GWebCache 0.9.0b<BR>
+        I|update|WARNING|You came back too early</CODE>
+      <LI>Some responses that are currently not given but that are valid and
+        your parser should still handle:<BR>
+        <CODE>I|whatever<BR>
+        I|blah||bar<BR>
+        H|192.168.0.1:123|321||foo<BR>
+        U|http://gcache.com|321|xyz|</CODE>
+    </UL>
+
+</UL>
+
+<H3>Step 4: How to make updates to a cache</H3>
+
+<UL>
+  <LI>&nbsp;To make an update, <B>your client must meet the following </B><B>criteria</B>.
+    Note that these are the same as the standard Ultrapeer criteria:
+    <UL>
+      <LI><B>Your client must have been online (running &amp; connected) for at
+        least an hour.</B>
+      <LI><B>Your client must accept incoming connections.</B> (This is usually
+        tested by keeping track of whether or not your client has received any
+        incoming connections.)
+      <LI>In other words, <B>leaf nodes must not send updates</B>.
+      <LI><B>Your client must support the Remote-IP Gnutella header</B>. This
+        header is essential for a client so that it can find it's own IP address
+        (for example, if your client is behind a firewall or NAT router). If
+        your client does not yet support this header, you should start
+        supporting it now. Ask on <A HREF="http://groups.yahoo.com/group/the_gdf/messages">the
+        GDF</A> if you have any questions regarding implementation.
+    </UL>
+
+  <LI>If your client meets these criteria, your client should send updates <B>once
+    an hour</B>. This is limited by the GWebCache and any updates sent too early
+    will be rejected. Again, <B>there is absolutely no reason to send more than
+    one request per hour to a GWC.</B>
+  <LI>Updates are sent through the following parameters:
+    <UL>
+      <LI><CODE>update=1</CODE>
+      <LI><CODE>ip=</CODE>[your client's numerical IP]<CODE>:</CODE>[your
+        client's port for incoming connections]
+      <LI><CODE>url=</CODE>[the url of a web cache <I>that your client has
+        successfully contacted</I>]
+    </UL>
+
+  <LI>Notes
+    <UL>
+      <LI>The IP address you send <B>must be you're client's IP address</B>.
+        This IP address will be checked against the one that the server sees. In
+        case your client is behind a transparent HTTP proxy, there is not much
+        you can do about it, your updates will most likely fail. However, if
+        your IP address is rejected (&quot;<CODE>I|update|WARNING|Rejected IP</CODE>&quot;)
+        on more than one cache then your client should consider not sending any
+        updates.
+      <LI>The URL you send <B>must be one that your cache has successfully
+        contacted</B>. This is why I said above, keep tack of which caches your
+        client has successfully contacted.<BR>
+        For example, Gnucleus keeps GWebCaches flagged with either
+        &quot;ALIVE&quot; or &quot;UNTESTED&quot;. Any web cache that is added
+        to the internal list is initially flagged as &quot;Untested&quot;. When
+        making Get requests, Gnucleus uses a cache flagged as
+        &quot;Untested&quot;. If the cache is successfully contacted, the URL is
+        flagged as &quot;Alive&quot;. When making updates, Gnucleus sends the
+        update to an &quot;Untested&quot; cache, and sends an &quot;Alive&quot;
+        cache in the <CODE>url</CODE> parameter.
+      <LI>Don't forget that the parameter values <B>must be URL-escape-encoded</B>.
+        (See the above explanation.)
+    </UL>
+
+  <LI><B>Examples:</B>
+    <UL>
+      <LI>To send an update the cache running at &quot;<CODE>http://www.server.com/path/to/gcache.cgi</CODE>&quot;
+        with your IP/port <CODE>194.64.64.1:123 </CODE>and sending the URL
+        &quot;<CODE>http://www.otherserver.net/webcache.cgi</CODE>&quot;:<BR>
+        <CODE>http://www.server.com/path/to/gcache.cgi?client=TEST1.0&amp;update=1&amp;ip=194.64.64.1%3A123&amp;url=http%3a%2f%2fwww.otherserver.net%2fwebcache.cgi</CODE>
+    </UL>
+
+</UL>
+
+<H3>Step 5: How to request information from a GWebCache</H3>
+
+<UL>
+  <LI>When your client needs IP addresses to connect to, <B>first try your
+    internal host cache</B> (information gathered from Pongs and X-Try headers).
+    On startup, your client should try about 20 IPs from its internal cache, and
+    <I>only then</I> should it contact a GWebCache.
+  <LI>Requesting information is simple, send the following parameter:
+    <UL>
+      <LI><CODE>get=1</CODE>
+    </UL>
+
+  <LI>If the GWebCache has hosts and/or URLs stored, it will return them
+    according to the format defined above.
+  <LI><B>Examples:</B>
+    <UL>
+      <LI><CODE>http://www.server.com/path/to/gcache.cgi?client=TEST1.0&amp;get=1</CODE>
+    </UL>
+
+</UL>
+
+<H3>Extras: Using the &quot;Network&quot; Parameter</H3>
+
+<UL>
+  <LI>GWebCache now supports storing more than one list of Hosts/URLs. A cache
+    owner may enable his/her cache to store more than just the default Gnutella
+    hosts. Your client should simply send the extra parameter: &quot;<CODE>net=</CODE>[name
+    of network]&quot;. When you contact a cache, there are two situations:
+  <LI>The cache supports the network you are asking for. Interaction with the
+    GWC will be unchanged.
+  <LI>The cache does not support the network you are asking for. The following
+    things will happen:
+    <UL>
+      <LI>The cache will send the extra response &quot;<CODE>I|net-not-supported</CODE>&quot;
+      <LI>When sending Updates: The cache will assume that the URL you are
+        submitting supports the network that you are asking for (!). The URL
+        will be stored internally along with the network name. Any other clients
+        that ask for this network will be given this URL as a kind of
+        &quot;redirect&quot; or &quot;try other&quot;.
+      <LI>When sending Gets: If the cache knows about a URL that supports this
+        network then it will return that URL. Think of this as a
+        &quot;redirect&quot;.
+    </UL>
+
+  <LI><B>Examples:</B>
+    <UL>
+      <LI><CODE>http://www.server.com/path/to/gcache.cgi?client=TEST1.0&amp;net=shareaza&amp;get=1</CODE>
+      <LI><CODE>http://www.server.com/path/to/gcache.cgi?client=TEST1.0&amp;net=shareaza&amp;update=1&amp;ip=194.64.64.1%3A123&amp;url=http%3a%2f%2fwww.otherserver.net%2fwebcache.cgi</CODE>
+    </UL>
+
+</UL>
+
+<H3>Extras: Using the Timestamp information</H3>
+
+<UL>
+  <LI><I>This feature is experimental</I>, we will keep the timestamp
+    information but might add more information as we see necessary.
+  <LI>As you may have noticed, GWC returns the &quot;age&quot; (time since
+    submission) of all URLs and IPs it stores. This information is provided as a
+    kind of &quot;freshness&quot; information.
+  <LI><U>What your client can do with this information:</U>
+    <UL>
+      <LI>If you notice that the information in the cache is &quot;very
+        fresh&quot; then your client can consider not sending an update for a
+        while. For example: if you notice that a cache has information that was
+        submitted less than a minute ago, you can wait two hours instead of one
+        until you send an update.
+      <LI><B>Be very careful with this: </B>If you notice that the information
+        in the cache is very old, then your client can consider sending an
+        update a little earlier. For example: if you notice a cache hasn't
+        gotten an update for more than an hour, you can send an update right
+        away. <B>Remember, this is very dangerous - your client should still not
+        send more than one request an hour.</B>
+    </UL>
+
+</UL>
+
+<H3>Extras: Clustering Information</H3>
+
+<UL>
+  <LI>The GWC2 beta supports the new &quot;<CODE>cluster=</CODE>[keywords]&quot;
+    parameter. This functionality is currently for testing of this feature, so
+    consider it &quot;alpha&quot;.
+  <LI>On <B>update</B> requests, if you include the extra parameter &quot;<CODE>cluster=keyword1,keyword2,...</CODE>&quot;,
+    these keywords will be stored along with the host you submit.
+  <LI>The following limitations are placed on the keyword string: it may only
+    contain the characters [A-Za-z0-9.-_:], and it may not be longer than 256
+    characters (yes, the entire keyword string). - Characters that aren't
+    allowed are stripped and any keywords beyond the 256 characters are dropped.
+  <LI>On <B>get</B> requests, the keywords are returned in the field after the
+    age parameter, like so:
+    <UL>
+      <LI><CODE>H|127.0.0.2:321|400|keyword1,keyword2,...</CODE>
+    </UL>
+
+</UL>
+
+<P><A HREF="#top">^ Top ^</A></P>
+
+<H2><A NAME="ChangeLog">Change Log</A></H2>
+
+<P><B>v1.9.4<BR>
+- Changed &quot;alpha&quot; to &quot;beta&quot; status</B><BR>
+- Added clustering information<BR>
+- Smaller corrections and updates</P>
+
+<P><B>v1.9.3.4<BR>
+</B>- Replaced &quot;Important Traffic Issues&quot; by &quot;Summary of
+Important Things to Remember&quot;</P>
+
+<P><B>v.1.9.3.3<BR>
+</B>- Added Timestamp information</P>
+
+<P><B>v1.9.3.2<BR>
+</B>- Added Traffic section</P>
+
+<P><B>v.1.9.3.1<BR>
+</B>- Clarified Remote-IP/X-Remote-IP issues</P>
+
+<P><B>v.1.9.3<BR>
+</B>- First release of &quot;Developers' Guide&quot;</P>
+
+<P><A HREF="#top">^ Top ^</A></P>
+
+<P><A HREF="index.html"><B>GWebCache Home</B></A><BR>
+<SMALL>See also: <A HREF="http://www.gnucleus.com/" TARGET="_top">http://www.gnucleus.com/</A><BR>
+Copyright (c) 2003 <A HREF="mailto:haukex@zero-g.net">Hauke Dämpfling</A>.
+License Terms: <A HREF="doc_license.txt">FDL</A>.</SMALL></P>
+
+</BODY>
+
+</HTML>

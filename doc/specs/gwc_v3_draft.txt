@@ -1,0 +1,615 @@
+Gnutella Web Cache (GWebCache) Specifications Version 3.0
+
+Copyright:	This document is dedicated to the public domain.
+Author(s):	Christian Biere (christianbiere at gmx dot de)
+Created:	2004-10-13
+Last-Edited:	2004-10-19
+Status:		Draft
+
+
+Intro
+=====
+
+The GWebCache system was developed by Gnucleus in especially Hauke Dämpfling.
+It provides a bootstrap system for Gnutella and possibly other decentral
+peer-to-peer networks.
+
+There are currently two specification for it i.e., version 1.0 and version
+2.0. The purpose of this specification version 3.0 is to integrate the
+advantages of version 2.0 into the version 1.0 specifications to eliminate
+unpopular and unused features but also to remove the overhead introduced by
+the version 2.0 specifications. A further aim is to reduce the problems caused
+by clients and GWebCaches which do canonicalize or verify GWebCache URLs
+properly. Instead of relying on common sense these specifications enforce
+simpler but stricter rules.
+
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this document are to be
+interpreted as described in RFC 2119.
+
+
+
+Basics
+======
+
+GWebCaches are based on top of HTTP using GET requests i.e., a TCP connection
+to the GWebCache is initiated followed by sending the request as a HTTP search.
+
+The request identifiers are case-insensitive but clients MUST send them with
+all characters being lower-case. There MUST NOT be spaces between the identifer
+and the '=' character or between the '=' character and the value. Thus the
+format is as follows:
+
+	<path>?<identifier>=<value>
+
+If requests are combined they MUST be separated by a single '&' character as
+follows:
+
+	<path>?<identifier>=<value>&<identifer2>=<value2>
+
+Note that only certain requests MAY be combined. Clients MUST NOT combine
+requests that are not explicitely defined as combinable. The values MAY be
+URL-encoded and unsafe characters MUST be URL-encoded. Clients SHOULD NOT
+URL-encode ASCII letters, digits, hyphen, underscores or tildes. URL-decoding
+MUST NOT happen before splitting the request line into single requests because
+the decoded values may contain the characters [?=&] which would confuse the
+parser.
+
+GWebCaches MUST implement the following legacy requests:
+
+ - ip
+ - url
+ - hostfile
+ - statfile
+ - urlfile
+ - ping
+
+GWebCaches MUST handle the following legacy parameters:
+
+ - client
+ - version
+ - net
+
+The following parameter is new and SHOULD be supported by GWebCaches:
+
+ - gwcs
+
+The above requests respectively parameters MUST NOT appear multiple times in a
+request line. The difference between parameters and requests is that the former
+trigger no action themselves and MUST only be used in conjunction with a
+request. All requests MUST feature the "client" parameter.
+
+The following requests should never be used to prevent conflicts with the
+GWebCache v2.0 specifications:
+
+ - cluster
+ - get
+ - update
+ - x.leaves
+
+The following request is reserved for GWebCache implementations and MUST NOT be
+used by clients. This request can be used to acquire human-readable information
+about the GWebCache but MAY be used for anything else if supported at all:
+
+ - data
+
+
+
+Line Parsing:
+=============
+
+Clients MUST treat the first '\r' <Carriage Return> or '\n' <Line Feed> as the
+end of the line. The next line starts at the first character that is not either
+\r or \n. This means that empty lines MUST be skipped. Do NOT assume that all
+lines are terminated equally. Further, keep in mind that the last line is often
+not explicitely terminated. GWebCaches SHOULD however terminate the last line
+and each other with \r\n.
+
+The following examples are valid lines i.e., PONG results whereas
+<Carriage Return> and <Line Feed> are escaped as '\r' respectively '\n':
+
+PONG SuperGWC/1.0\r
+PONG SuperGWC/1.0\n
+PONG SuperGWC/1.0\r\n
+PONG SuperGWC/1.0\r\r
+PONG SuperGWC/1.0\n\n
+PONG SuperGWC/1.0
+
+The last example is of course only valid in the last line of a reply.
+GWebCaches MUST NOT emit lines starting with spaces. Any non-parseable line
+marks the end of the reply. Clients SHOULD ignore "trash" after a valid reply.
+
+
+
+Requests:
+========
+
+Request:	ip
+Scheme:		ip=<IPv4 address>:<port>
+Example:	ip=192.0.2.1:6346
+Description:	The value MUST be an IPv4 address followed by a colon and a
+		port value (1-65535). There is no default port which means
+		the colon followed by a port value MUST NOT be omitted.
+		<IPv4 address> MUST contain 3 dots i.e., compressed
+		representations MUST NOT be used. Each number MUST be in
+		the range 0..255 and MUST NOT be prefix by zeros, '+' or
+		any other character. MAY be combined with the "url" request.
+
+
+Request: 	url
+Scheme:		url=<Canonical HTTP URL>
+Example:	http://host.example.com/path/
+Description:	Clients MUST NOT send non-canonical URLs. However, GWebCaches
+		MAY either canonicalize URLs before handling them or MUST
+	 	discard non-canonical URLs. The URL MUST be a valid GWebCache
+		URL as specified below. MAY be combined with "ip" request.
+
+
+Request:	urlfile
+Scheme:		urlfile=<value>
+Example:	urlfile=1
+Description:	If the value is "1" the GWebCache MUST report at minimum
+		one GWebCache URL from the good set. It MUST NOT send more
+		than 200 URLs. The GWebCache MUST NOT report duplicate URLs
+		nor non-canonical URLs. The GWebCache MAY report its own URL.
+
+
+Request:	hostfile
+Scheme:		hostfile=<value>
+Example:	hostfile=1
+Description:	If the value is "1" the GWebCache MUST report at minimum
+		one peer address. It MUST NOT return more than 500 peer
+		addresses and MUST NOT return any dupes.
+
+
+Request:	ping
+Scheme:		ping=<value>
+Example:	ping=1
+Description:	If the value is "1" the GWebCache MUST report a line of
+		the following format:
+
+		PONG<space><Server>
+
+		<space> MUST be a single or more space characters.
+		<Server> SHOULD be the name of the CGI script or it
+		not a general-purpose web server, the name of the
+		GWebCache software.
+
+
+Request:	statfile
+Scheme:		statfile=<value>
+Example:	statfile=1
+Description:	If the value is anything other than "1", the result is
+		unspecified.
+
+
+
+Parameters:
+===========
+
+Parameter:	client
+Scheme:		client=<value>
+Example:	client=gnutella
+Description:	This parameter is mandatory for all requests. It MUST be at
+		least 4 characters long but SHOULD NOT be longer than 32
+		characters. The first 4 characters MUST be ASCII letters and
+		SHOULD be all upper-case. The value is case-insensitive. After
+		the first 4 characters all ASCII characters from space to tilde
+		(ASCII codes 32-126) are allowed. If a GWebCache stores the
+		value in a database, it MUST take care to replace or escape
+		characters as necessary. For Gnutella clients, the first 4
+		characters MUST be identical to their registered 4-letter code.
+
+
+Parameter:	version
+Scheme:		version=<value>
+Example:	version=2.0 Pro
+Description:	This parameter is obsolete for all requests. It SHOULD NOT be
+		longer than 32 characters. If GWebCaches store the value in a
+		database, they MUST take care to replace or escape characters
+		as necessary. The value SHOULD indicate the product version
+		of the client.
+
+
+Parameter:	net
+Scheme:		net=<value>
+Example:	net=gnutella
+Description:	Specifies the network to be used. The value MUST be compared
+		case-insensitive. The character set is limited to
+		[A-Za-z0-9./_-]. In words: ASCII letters, digits dots, slashes,
+		underscores or hypen. A missing request implies the Gnutella
+		network. Clients MUST emit a net request with a value other
+		than "gnutella" if they are not Gnutella clients. Gnutella2
+		also known as Mike's Protocol is NOT Gnutella and clients of
+		that network MUST use "gnutella2" for the net request. A
+		GWebCache MUST NOT be modified to use any other implied network
+		than Gnutella.
+
+
+Parameter:	gwcs
+Scheme:		gwcs=<value>
+Example:	gwcs=1
+Description:	This request is semantically identical with the "urlfile"
+		request but can be combined with the hostfile request. This is
+		necessary to keep backwards-compatibility with current
+		implementations which are supposed to ignore unknown requests
+		but are not required to handle combined "urlfile" and
+		"hostfile" requests. GWebCaches MUST report URLs followed by
+		peer addresses or vice-versa, if "gwcs" and "hostfile" are
+		combined. They MUST NOT interlace peers and URLs. This
+		parameter MUST NOT be used instead of the "urlfile" request.
+		Clients MUST NOT combine this parameter with hostfile requests
+		if their set of good URLs is sufficiently large and fresh.
+
+
+Replies:
+========
+
+Request:	ip
+Handling:	A GWebCache MUST discard the address if it's not identical
+		to the address of the connecting client. The GWebCache MAY
+		discard the address if it detects that the client connects
+		through a proxy, to prevent adding the address of the proxy
+		to the address cache. The GWebCache MUST NOT trust any
+		proxy headers which are supposed to indicate the real address
+		of the client to prevent submission of abritrary third-party
+		addresses. A GWebCache connected to the public internet
+		MUST discard private IPv4 addresses as specified by RFC 1918.
+		GWebCaches MAY discard or reject updates for certain addresses
+		or ports.
+Reply:		The GWebCache MUST emit a line "OK" if the address was
+		accepted. The GWebCache MAY emit a line "OK" if the address
+		was discarded. The GWebCache MAY emit a line starting with
+		"WARNING" followed by a human-readable message e.g.
+		"WARNING: Proxy detected".
+
+
+Request:	url
+Handling:	The submitted URL MUST either be canonicalized or discard if
+		it is not canonical. The GWebCache MUST either discard the URL
+		or verify that the GWebCache at the specified URL is working.
+		If the URL is working it SHOULD be listed in replies to
+		"urlfile" requests. GWebCaches MAY discard or reject updates
+		for certain URLs.
+Reply:		The GWebCache MUST emit a line "OK" if the URL was accepted.
+		The GWebCache MAY emit a line "OK" if the address was
+		discarded. The GWebCache MAY emit a line starting with
+		"WARNING" followed by a human-readable message e.g.
+		"WARNING: Non-canonical URL".
+
+
+Request:	statfile
+Handling:	The handling is implementation-defined if the value is not "1".
+Reply:		If the value is "1", the GWebCache MUST emit at least three
+		lines containing numbers whereas the numbers have the follwing
+		meaning:
+
+		1. line: 	Number of requests since the GWebCache was
+				started. A request line counts as one
+				request, regardless how many requests are
+				combined.
+
+		2. line:	Number of requests during the last hour i.e.,
+				before the running hour. It is NOT required
+				to align this to x:00.
+
+		3. line:	Number of update requests during the last hour
+				i.e., before the running hour. The
+
+		If the GWebCache cannot or does not collect this data, it MUST
+		return zero in all lines.
+		
+
+	
+
+End-Of-Reply Marker:
+====================
+
+A GWebCache MAY send a '#' (hash) as the first character of the last line
+to mark the end of the reply. Clients MUST NOT care about any characters
+after this character or this line. This is useful to append debugging
+information to the reply or separate the reply from unsolicited data
+appended by the server e.g., JavaScript Ads without confusing the client.
+Note that the '#' alone is NEVER sufficient to decide whether the URL is a
+GWebCache or not. This could as well be the first line of a shell script:
+
+#!/bin/sh
+echo This is not a GWebCache
+
+Further, any non-parseable line marks the end of the reply as well.
+
+
+
+Valid GWebCache URLs:
+=====================
+
+GWebCaches and clients MUST either discard or canonicalize non-canonical
+URLs. After canonicalization, the URL MUST match the following criteria:
+
+<scheme>://<hostname>[:<port>]<path>
+
+There MUST NOT be spaces before or after any of the above parts.
+
+<scheme> MUST be http.
+
+<hostname> MUST NOT contain characters other than [a-z0-9.-].  In words: Only
+lower-case alphanumerical ASCII characters, dots or hyphen. There MUST be at
+least one dot in <hostname>. The last dot MUST be followed by two alphabetical
+characters. The first character MUST be an ASCII letter or digit. Dots MUST
+NOT be preceded or followed by a hyphen. Note that IP addresses as hostnames
+are explicitely disallowed.
+
+[:<port>] MUST be omitted if port is 80. The port MUST be decimal encoded and
+MUST NOT be prefixed by zeros, a '+', or any other character at all.
+
+<path> MUST NOT contain characters other than [a-z0-9/.~_-]. In words: Only
+lower-case alphanumerical ASCII characters, slashes, dots, tildes, underscores
+or hyphen. There MUST NOT be any slash before or after a slash. <path> MUST be
+at minimum "/". <path> MUST start with '/'. The last characters MUST NOT match
+"/." or "/..". There MUST NOT be "/./" or "/../" within <path>.
+
+Any URLs not satisfying these criteria in full MUST NOT be submitted to
+GWebCaches, MUST NOT be contacted and MUST NOT be listed by any GWebCache.
+
+The reason for disallowing upper-case characters in <path> is that HTTP leaves
+it up to the implementation whether paths are handled case-sensitive or
+case-insensitive. This has caused dupes for servers with case-insensitive
+filesystems in the past because the GWebCaches didn't check the request URI.
+Although this check is required now, it'd be keen to rely that it's actually
+implemented. Under certain circumstances the GWebCache might not be able detect
+the different request URI because the URI might have been modified a proxy, by
+the server or the CGI environment. Also, it has to be expected that
+non-compliant clients and GWebCaches will be around for quite awhile.
+
+URLs that are likely to point to static data instead of a GWebCache (e.g., URLs
+ending with ".htm", ".html", ".txt") SHOULD be considered invalid.
+
+
+
+Common Rules for GWebCaches and Clients:
+========================================
+
+GWebCaches and clients MUST manage at least two sets of URLs i.e., a so-called
+"good set" and a "bad set". The "good set" contains all GWebCaches URLs that
+worked respectively were successfully verified during the last connection
+attempt. These sets MUST be stored permanently i.e., they MUST NOT be cleared
+on exit or reboot of the host machine. The "bad set" contains all URLs that
+failed. As it is impossible to store an infinite amount of URLs, bad URLs MAY
+be completely forgotten if the following condition holds:
+
+ 1. The URL is not a valid GWebCache URL.
+ 2. The maximum amount of failed connection attempts was exceeded.
+ 3. The URL was not seen or reported for a certain time.
+ 4. The limit of storeable URLs is exceeded and the URL is the one which
+    was connected to of the URLs which failed the most.
+   
+Details for each case:
+
+ 1. Nobody should ever connect to such an URL in the first place, nor report
+    nor try to submit it.
+
+ 2. The "maximum amount" depends on whether this is a GWebCache or a regular
+    client. GWebCaches MUST NOT connect more than 12 times to an URL if it
+    fails. Clients MUST NOT connect more than 7 times to an URL if it fails.
+
+ 3. GWebCaches MAY forget i.e., remove any URL from the bad set which has
+    failed for more than 3 months. Clients MAY forget any URL from the bad set
+    which failed for a month.
+
+ 4. The cases 2 and 3 MAY be overriden if the number of URLs in the bad set
+    exceeds the acceptable number of URLs to be stored. This number SHOULD NOT
+    be below 1000. An implementation MAY decide to consider URLs that match
+    certain patterns or criteria permanently as bad in order to prevent
+    flooding of the URL database with non-working URLs. Further, an URL SHOULD
+    be forgotten if a DNS lookup for the hostname fails and the URL is neither
+    in the bad nor the good set.
+
+URLs and peer addresses of different networks MUST NOT be mixed.
+
+
+
+The Server Side:
+================
+
+GWebCaches MUST NOT serve any other than the configured URL. This means the
+HTTP Host header is mandatory even if using HTTP/0.9 or HTTP/1.0. The value of
+the Host header MUST be identical to either <hostname> or <hostname>[:<port>].
+The value MUST NOT contain the [:<port>] part of port is 80. The <hostname>
+MUST be compared case-sensitive unlike usual HTTP applications in which the
+hostname is case-insensitive.  If the <hostname> or <path> is not
+canonicalized, the request MUST be rejected returning a HTTP/1.1 404 error code
+or if that is not possible by issuing "ERROR" optionally followed by a
+human-readable message as the first line of the document content.
+
+URLs that have been verified successfully MUST NOT be reported to clients for
+more than 12 hours. They MUST NOT be reported to clients again before a later
+verification succeeded.
+
+Peer addresses MUST NOT be reported to clients for more than 2 hours if the
+client does not update its address within this time.
+
+If the GWebCache cannot verify URLs itself e.g., due to administrative
+restrictions, the set of good URLs MUST be verified and provided externally.
+If this is not possible either, the GWebCache MUST NOT report any URL which
+is not guaranteed to work.
+
+It is NOT recommend that a GWebCache serves requests for more than one network.
+Instead - if desired - one GWebCache per network should be installed and
+different hostnames should be used for each. Otherwise, problems which cause
+high request rates in one of the supported networks would affect each other
+network as well. A single point of failure should be prevented by all means.
+
+A GWebCache SHOULD use "TEST" as the "client" parameter and
+"<Product>-<Version>" as "version" parameter when verifying URLs where
+<Product> is the name of the CGI script or sofware used as GWebCache and
+<Version> its version number.
+
+A "ping" request is not sufficient to decide whether a GWebCache at a given URL
+is operational.
+
+The delay between verifications of a failed URL MUST be at minimum as follows:
+
+	 2^n hours
+
+whereas n is the number of failed attempts. This means the first re-attempt is
+delayed at least 2 hours, the next 4 hours etc. The last (12th) attempt would
+go off after about 85 days.
+
+
+
+The Client Side:
+================
+
+The client side applies to GWebCaches as well during verification of an URL. A
+client MUST move the URL of a GWebCache to the set of bad URLs if any of the
+following conditions holds:
+
+ - The connection could not be established.
+ - The HTTP response code is not 200.
+ - The server sent a Content-Location which did not match the request URI.
+ - The first line of the returned document starts with "ERROR".
+ - The returned document is empty, returns only empty lines,
+   or starts with '#' (See End-Of-Reply Marker).
+ - The returned document does not match a valid result for the request.
+
+A client MUST NOT connect more than once an hour to a GWebCache in the good
+set. The client SHOULD add about 5 minutes to this delay due to possible clock
+skews. Iff the client is a GWebCache which is verifying the URL, it MAY send up
+to 3 requests per hour.
+
+If a client connects to multiple networks, it MUST separate GWebCache URLs for
+each network. This means if an URL works for network X, the client MUST NOT
+send requests for network Y to the GWebCache unless another GWebCache that
+serves network Y reported this URL when requesting URLs for network Y. Clients
+MUST NOT connect to peers addresses of a network X that have been reported 
+during a GWebCache request for a different network.
+
+All clients MUST send the "client" parameter in requests. The "version"
+parameter is optional and MAY be omitted. GWebCaches MUST NOT require the
+"version" parameter in requests.
+
+The delay between connecting to failed URLs MUST be at minimum as follows:
+
+	8 * 2^n hours
+
+whereas n is the number of failed attempts. That means the first re-attempt is
+delayed at least 16 hours, the next 32 hours etc. The last (7th) attempt would
+be after about 21 days.
+
+Clients MUST NOT try to connect to URLs from the good set only. This would
+result in connecting to the most stable GWebCaches only which will sooner or
+later collapse under the load while other GWebCache would be under-utilized.
+
+
+
+HTTP handling:
+==============
+
+Clients using HTTP/1.1 or later SHOULD emit a "Connection" header with the
+value "close" to disable keep-alive connections. Clients that cannot properly
+decode data with the transfer encoding "chunked", MUST use HTTP/1.0 instead.
+
+Clients SHOULD omit unnecessary headers that have no relevance for GWebCache
+requests. If a client emits an Accept header, it SHOULD NOT list any other
+types than text/*, or */*. Clients SHOULD emit the User-Agent header.
+
+Clients MUST check the value of the Content-Location header if received. If the
+value starts with "http://" it MUST be identical to the URL used to connect to
+the server. If the value starts with '/', the <path> of the used URL MUST be
+identical. The search part "?.*" MUST NOT be taken into account. The comparison
+MUST be case-sensitive. If any of these checks fails, the request has failed.
+Clients MUST NOT use the Content-Location header to guess the correct URL on
+failure.
+
+GWebCaches SHOULD treat all requests featuring one of the following headers as
+if received from a proxy:
+
+ - Via
+ - Client-IP
+ - Forwarded
+ - X-Forwarded-For
+
+If the result of DNS lookups is cached, the caching MUST be in line with DNS
+standards and policies. It is NOT RECOMMENDED to perform any client-side
+caching of DNS lookups.
+
+
+Further Recommendations:
+========================
+
+It is highly recommended to install GWebCaches at non-obvious URLs in order to
+prevent unjustified banning of these URLs i.e., the URL should not contain the
+words "gnutella", "gwc", "gwebcache", "cache", the name of any Gnutella vendor
+or anything else which gives a hint that it might be the URL of a GWebCache. If
+using a CGI script, the file should be renamed or installed as
+index.[extension] so that the directory is used as target URL.
+
+Requests to the GWebCache URL without a HTTP search should offer or point to
+contact information of the person in charge of the GWebCache in order to inform
+him or her of critical bugs in or misconfigurations of his or her GWebCache.
+This contact information whether an email address or something else MUST NOT be
+used for unsolicited mail, advertising, data mining or any other illegitimate
+reason whatsoever. However, it's suggested to use a dedicated mail account
+which can easily be discarded and re-created if abused.
+
+
+
+Implementation Notes:
+=====================
+
+
+When checking for spaces, letters or digits make sure you check for ASCII
+characters only i.e., locale-dependent characters or other encodings like
+UTF-8 MUST NOT be used.
+
+During URL-decoding the '+' (plus) character SHOULD be replaced by a space
+character because it's an alternate form of "%20". However, this MUST happen
+BEFORE decoding %HEX encoded characters.
+
+Sun's Java Virtual Machine caches DNS lookups indefinitely ("forever") by
+default which violates DNS standards and policies. Therefore, clients written
+in Java MUST disable this behaviour.
+
+
+
+Credits:
+========
+
+These specifications are mostly based on the v1.0 and partially on the
+v2.0 specifications. The following people have directly or indirectly
+contributed to the v3.0 specifications:
+
+	Hauke Dämpfling
+	Christian Biere
+	Jamie Jones
+	Jon Atkins
+
+They are also heavily influenced by positive and many negative experiences
+with the GWebCache client-side implementation of diverse Gnutella vendors.
+
+
+Resources:
+==========
+
+RFC 1918 "Address Allocation for Private Internets"
+http://www.ietf.org/rfc/rfc1918.txt
+
+RFC 2119 "Key words for use in RFCs to Indicate Requirement Levels"
+http://www.ietf.org/rfc/rfc2119.txt
+
+RFC 2616 "Hypertext Transfer Protocol - HTTP/1.1"
+http://www.ietf.org/rfc/rfc2616.txt
+
+The official website of the Gnutella Web Caching system:
+http://www.gnucleus.com/gwebcache/
+
+GWebCache specifications v1.0
+http://www.gnucleus.com/gwebcache/specs.html
+
+GWebCache specifications v2.0
+http://www.gnucleus.com/gwebcache/specs.html
+
+Jon Atkins' GWebCache Scan Report:
+http://gcachescan.jonatkins.com/
+

@@ -1,0 +1,41 @@
+acclog.o: acclog.c acclog.h common.h config.h casts.h debug.h compat.h \
+  net_addr.h append.h nettools.h oop.h
+base32.o: base32.c common.h config.h casts.h debug.h compat.h base32.h
+cobs.o: cobs.c cobs.h common.h config.h casts.h debug.h compat.h
+compat.o: compat.c compat.h common.h config.h casts.h debug.h append.h \
+  nettools.h net_addr.h hashtable.h
+connection.o: connection.c connection.h common.h config.h casts.h debug.h \
+  compat.h event_source.h net_addr.h nettools.h mem.h oop.h
+debug.o: debug.c debug.h common.h config.h casts.h compat.h
+dns.o: dns.c dns.h common.h config.h casts.h debug.h compat.h net_addr.h
+event_source.o: event_source.c event_source.h common.h config.h casts.h \
+  debug.h compat.h mem.h oop.h
+event_watcher.o: event_watcher.c event_watcher.h common.h config.h \
+  casts.h debug.h compat.h event_source.h oop.h
+fifo.o: fifo.c fifo.h common.h config.h casts.h debug.h compat.h mem.h
+filter.o: filter.c filter.h common.h config.h casts.h debug.h compat.h \
+  net_addr.h snode.h nettools.h
+ggep.o: ggep.c ggep.h common.h config.h casts.h debug.h compat.h cobs.h \
+  append.h nettools.h net_addr.h
+guid.o: guid.c guid.h common.h config.h casts.h debug.h compat.h \
+  hashtable.h mem.h nettools.h net_addr.h
+gwc.o: gwc.c gwc.h common.h config.h casts.h debug.h compat.h hashtable.h \
+  nettools.h net_addr.h http.h oop.h mem.h snode.h fifo.h acclog.h
+hashlist.o: hashlist.c hashlist.h common.h config.h casts.h debug.h \
+  compat.h node.h mem.h
+hashtable.o: hashtable.c hashtable.h common.h config.h casts.h debug.h \
+  compat.h mem.h
+http.o: http.c http.h common.h config.h casts.h debug.h compat.h oop.h \
+  mem.h snode.h fifo.h acclog.h net_addr.h nettools.h append.h
+list.o: list.c mem.h common.h config.h casts.h debug.h compat.h list.h \
+  node.h
+mem.o: mem.c mem.h common.h config.h casts.h debug.h compat.h
+mem_buf.o: mem_buf.c mem_buf.h common.h config.h casts.h debug.h compat.h \
+  mem.h
+nettools.o: nettools.c nettools.h common.h config.h casts.h debug.h \
+  compat.h net_addr.h append.h base32.h
+node.o: node.c node.h common.h config.h casts.h debug.h compat.h mem.h
+peerlock.o: peerlock.c peerlock.h common.h config.h casts.h debug.h \
+  compat.h net_addr.h hashlist.h node.h mem.h nettools.h
+snode.o: snode.c snode.h common.h config.h casts.h debug.h compat.h mem.h
+socker.o: socker.c common.h config.h casts.h debug.h compat.h socker.h

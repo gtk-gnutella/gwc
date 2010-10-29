@@ -1,0 +1,36 @@
+TODO:
+
+VERY IMPORTANT:
+
+  - Complete documentation
+
+IMPORTANT:
+
+  - blacklist for manual constant removal (URLs, vendors, versions)
+  - more checks for duplicates (compare IPs to prevent dyndns squatting)
+  - escape binary data in all log messages
+  - verify and test the code regarding set{g,u}id(), chroot() thoroughly
+  - Queue URL checks, so that re-verifications are handled with a higher
+    priority than new URLs.
+
+LESS IMPORTANT:
+
+  - verify peers by initiating a connect as Gnutella leaf [by Raphael Manfredi]
+  - readv/writev-like interface for the FIFOs to minimize copying
+  - maintain bandwidth counters per hour, day and total [by Raphael Manfredi]
+  - optional bandwidth limiting [by Raphael Manfredi]
+  - re-do the OOP-like stuff to have less coding overhead
+  - add an option/feature to submit the URL to other GWCs to get it started
+    [by Jeroen Asselman]
+  - add a feature to sync a group of Crabs so that all updates are
+    distributed to the whole group [by Raphael Manfredi]
+ 
+GIMMICK:
+  
+  - support Transfer-Encoding gzip
+  - dynamically {de,in}crease the number of returned peers and URLs
+    depending on the current request and update rates i.e., return more
+    if the rates increase to decrease the overall rate.
+  - stats per client and version
+  
+/* vi: set ai et sts=2 sw=2 cindent: */

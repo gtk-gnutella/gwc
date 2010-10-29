@@ -1,0 +1,50 @@
+checker.o: checker.c lib/http.h lib/common.h lib/config.h lib/casts.h \
+  lib/debug.h lib/compat.h lib/oop.h lib/mem.h lib/snode.h lib/fifo.h \
+  lib/acclog.h lib/net_addr.h lib/nettools.h lib/gwc.h lib/hashtable.h \
+  lib/append.h checker.h lib/connection.h lib/event_source.h lib/filter.h \
+  client.h lib/event_watcher.h lib/list.h lib/node.h lib/mem_buf.h \
+  options.h dnshelper.h
+client.o: client.c client.h lib/common.h lib/config.h lib/casts.h \
+  lib/debug.h lib/compat.h lib/connection.h lib/event_source.h \
+  lib/net_addr.h lib/event_watcher.h lib/fifo.h lib/list.h lib/node.h \
+  lib/http.h lib/oop.h lib/mem.h lib/snode.h lib/acclog.h lib/nettools.h \
+  lib/gwc.h lib/hashtable.h lib/mem_buf.h
+dnshelper-thread.o: dnshelper-thread.c dnshelper.h lib/common.h \
+  lib/config.h lib/casts.h lib/debug.h lib/compat.h lib/connection.h \
+  lib/event_source.h lib/net_addr.h lib/gwc.h lib/hashtable.h \
+  lib/nettools.h options.h
+main.o: main.c lib/common.h lib/config.h lib/casts.h lib/debug.h \
+  lib/compat.h lib/oop.h lib/http.h lib/mem.h lib/snode.h lib/fifo.h \
+  lib/acclog.h lib/net_addr.h lib/filter.h lib/event_watcher.h \
+  lib/event_source.h lib/nettools.h lib/append.h options.h webcache.h \
+  lib/connection.h dnshelper.h lib/gwc.h lib/hashtable.h
+options.o: options.c lib/gwc.h lib/common.h lib/config.h lib/casts.h \
+  lib/debug.h lib/compat.h lib/hashtable.h lib/nettools.h lib/net_addr.h \
+  lib/http.h lib/oop.h lib/mem.h lib/snode.h lib/fifo.h lib/acclog.h \
+  options.h
+peercache.o: peercache.c lib/nettools.h lib/common.h lib/config.h \
+  lib/casts.h lib/debug.h lib/compat.h lib/net_addr.h lib/append.h \
+  lib/gwc.h lib/hashtable.h lib/hashlist.h lib/node.h lib/http.h \
+  lib/oop.h lib/mem.h lib/snode.h lib/fifo.h lib/acclog.h lib/dns.h \
+  lib/list.h options.h peercache.h lib/filter.h
+slist.o: slist.c lib/snode.h lib/common.h lib/config.h lib/casts.h \
+  lib/debug.h lib/compat.h slist.h
+stats.o: stats.c stats.h lib/common.h lib/config.h lib/casts.h \
+  lib/debug.h lib/compat.h lib/gwc.h lib/hashtable.h lib/nettools.h \
+  lib/net_addr.h
+template.o: template.c lib/mem.h lib/common.h lib/config.h lib/casts.h \
+  lib/debug.h lib/compat.h lib/mem_buf.h lib/gwc.h lib/hashtable.h \
+  lib/nettools.h lib/net_addr.h lib/append.h lib/http.h lib/oop.h \
+  lib/snode.h lib/fifo.h lib/acclog.h options.h template.h stats.h
+uhc.o: uhc.c lib/append.h lib/common.h lib/config.h lib/casts.h \
+  lib/debug.h lib/compat.h lib/nettools.h lib/net_addr.h lib/ggep.h \
+  lib/guid.h lib/gwc.h lib/hashtable.h lib/peerlock.h lib/list.h \
+  lib/node.h lib/mem.h uhc.h lib/connection.h lib/event_source.h \
+  lib/event_watcher.h lib/filter.h peercache.h options.h
+webcache.o: webcache.c lib/append.h lib/common.h lib/config.h lib/casts.h \
+  lib/debug.h lib/compat.h lib/nettools.h lib/net_addr.h lib/mem.h \
+  lib/http.h lib/oop.h lib/snode.h lib/fifo.h lib/acclog.h lib/gwc.h \
+  lib/hashtable.h lib/peerlock.h options.h peercache.h lib/filter.h \
+  stats.h template.h uhc.h lib/connection.h lib/event_source.h \
+  lib/event_watcher.h webcache.h checker.h client.h lib/list.h lib/node.h \
+  lib/mem_buf.h

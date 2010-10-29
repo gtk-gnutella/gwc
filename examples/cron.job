@@ -1,0 +1,14 @@
+# This an example cron job for Crab
+HOME=/home/gwc
+SHELL=/bin/sh
+PATH=/bin:/usr/bin:/usr/local/bin
+
+# Not as neat as init.d or rc.d but works almost everywhere with no hassle.
+@reboot gwc -f ~/crab.conf
+
+# Restart periodically in case of a crash; the TCP/UDP sockets prevent
+# multiple running Crabs.
+*/15 gwc -f ~/crab.conf
+
+# Rotate and compress the log files every hour.
+@hourly rotate-crab-logs.sh

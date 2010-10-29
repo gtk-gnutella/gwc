@@ -1,0 +1,39 @@
+body {
+	background: white;
+	color: black;
+}
+td.signal {
+	font-weight: bold;
+	padding: 2pt 20pt;
+}
+td.detail {
+	background: white;
+	padding: 2pt 20pt;
+}
+td.option {
+	background: white;
+	font-weight: bold;
+	padding: 0pt 20pt;
+}
+h1.header {
+	background: #800;
+	color: white;
+	font-weight: bold;
+	padding: 2pt 4pt;
+	text-align: center;
+	border: 1pt solid black;
+}
+h2.header {
+	background: lightgray;
+	padding: 2pt 4pt;
+}
+h3.header {
+	background: lightgray;
+	padding: 2pt 4pt;
+}
+table.files {
+	background: #eeeeee;
+	border: 0pt;
+	width: 100%;
+}
+

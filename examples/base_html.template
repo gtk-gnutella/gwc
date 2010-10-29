@@ -1,0 +1,22 @@
+Content-Type: text/html
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+<title>GhostWhiteCrab</title>
+<style type="text/css">
+body { background: #fdb; color: white; }
+h1 {	text-align: center;
+	background: #800;
+	border: 1pt black solid;
+	padding: 2pt 4pt;
+}
+p { text-align: center; font-weight: bold; font-size: 72pt; }
+</style>
+</head>
+
+<body>
+<h1><tt>&crab.user.agent;</tt></h1>
+<p>This is a Gnutella Web Cache.</p>
+</body>
+</html>

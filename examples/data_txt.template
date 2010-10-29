@@ -1,0 +1,17 @@
+Content-Type: text/plain; charset=US-ASCII
+
+&crab.user.agent;
+
+		TOTAL:		HOURLY:
+
+Requests:	&crab.stats.total.requests;		&crab.stats.hourly.requests;
+  -  get:	&crab.stats.total.requests.get;		&crab.stats.hourly.requests.get;
+  - urlfile:	&crab.stats.total.requests.urlfile;		&crab.stats.hourly.requests.urlfile;
+  - hostfile:	&crab.stats.total.requests.hostfile;		&crab.stats.hourly.requests.hostfile;
+
+Updates:	&crab.stats.total.updates;		&crab.stats.hourly.updates;
+  -  IP:	&crab.stats.total.updates.ip;		&crab.stats.hourly.updates.ip;
+  - URL:	&crab.stats.total.updates.url;		&crab.stats.hourly.updates.url;
+
+
+Running since:	&crab.startup.time;

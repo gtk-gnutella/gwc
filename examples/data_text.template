@@ -1,0 +1,39 @@
+Content-Type: text/plain; charset=US-ASCII
+
+&crab.user.agent;
+
+Total stats:
+Requests	&crab.stats.total.requests;
+- get		&crab.stats.total.requests.get;
+- hostfile	&crab.stats.total.requests.hostfile;
+- urlfile	&crab.stats.total.requests.urlfile;
+- ping		&crab.stats.total.requests.ping;
+- statfile	&crab.stats.total.requests.statfile;
+Updates		&crab.stats.total.updates;
+- ip		&crab.stats.total.updates.ip;
+- url		&crab.stats.total.updates.url;
+Accepts		&crab.stats.total.accepts;
+Blocked		&crab.stats.total.blocked;
+Errors		&crab.stats.total.errors;
+Too early	&crab.stats.total.too_early;
+RX		&crab.stats.total.rx;
+TX		&crab.stats.total.tx;
+
+Hourly stats:
+Requests	&crab.stats.hourly.requests;
+- get		&crab.stats.hourly.requests.get;
+- hostfile	&crab.stats.hourly.requests.hostfile;
+- urlfile	&crab.stats.hourly.requests.urlfile;
+- ping		&crab.stats.hourly.requests.ping;
+- statfile	&crab.stats.hourly.requests.statfile;
+Updates		&crab.stats.hourly.updates;
+- ip		&crab.stats.hourly.updates.ip;
+- url		&crab.stats.hourly.updates.url;
+Accepts		&crab.stats.hourly.accepts;
+Blocked		&crab.stats.hourly.blocked;
+Errors		&crab.stats.hourly.errors;
+Too early	&crab.stats.hourly.too_early;
+RX		&crab.stats.hourly.rx;
+TX		&crab.stats.hourly.tx;
+
+Running since: &crab.startup.time;

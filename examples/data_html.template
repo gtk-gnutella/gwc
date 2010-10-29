@@ -1,0 +1,168 @@
+Content-Type: text/html; charset=utf-8
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+<title>GhostWhiteCrab</title>
+<style type="text/css">
+body { background: #fdb; color: white; }
+table { border: 0px; width: 100%; }
+table.x { border: 0px; width: 50%; }
+table.y { border: 0px; width: 80%; }
+td { background: #a87; padding: 2pt 8pt; }
+td.x { background: #fdb; }
+td.y { background: #a87; width: 50%; }
+th { background: #800; font-weight: bold; padding: 2pt 8pt; border: 1pt solid black; }
+h1 { text-align: center; background: #800; padding: 2pt 4pt; border: 1pt black solid; }
+div.x { text-align: right; color: black; width: 99%; };
+</style>
+</head>
+
+<body>
+<h1><tt>&crab.user.agent;</tt></h1>
+
+<table width="99%" style="background: #fdb;">
+<colgroup><col width="99%"><col width="20%"></colgroup>
+<tr>
+<td class="x">
+<table width="99%" style="background: #fdb;">
+<colgroup><col width="15%"><col width="20%"><col width="20%"></colgroup>
+<tr>
+	<th>Stats:</th>
+	<th>Total:</th>
+	<th>Last Hour:</th>
+</tr>
+<tr>
+	<td>Incoming connections</td>
+	<td>&crab.stats.total.accepts;</td>
+	<td>&crab.stats.hourly.accepts;</td>
+</tr>
+<tr>
+	<td>Requests</td>
+	<td>&crab.stats.total.requests;</td>
+	<td>&crab.stats.hourly.requests;</td>
+</tr>
+<tr>
+	<td> - base (none)</td>
+	<td>&crab.stats.total.requests.base;</td>
+	<td>&crab.stats.hourly.requests.base;</td>
+</tr>
+<tr>
+	<td> - data</td>
+	<td>&crab.stats.total.requests.data;</td>
+	<td>&crab.stats.hourly.requests.data;</td>
+</tr>
+<tr>
+	<td> - get</td>
+	<td>&crab.stats.total.requests.get;</td>
+	<td>&crab.stats.hourly.requests.get;</td>
+</tr>
+<tr>
+	<td> - hostfile</td>
+	<td>&crab.stats.total.requests.hostfile;</td>
+	<td>&crab.stats.hourly.requests.hostfile;</td>
+</tr>
+<tr>
+	<td> - urlfile</td>
+	<td>&crab.stats.total.requests.urlfile;</td>
+	<td>&crab.stats.hourly.requests.urlfile;</td>
+</tr>
+<tr>
+	<td> - ping</td>
+	<td>&crab.stats.total.requests.ping;</td>
+	<td>&crab.stats.hourly.requests.ping;</td>
+</tr>
+<tr>
+	<td> - statfile</td>
+	<td>&crab.stats.total.requests.statfile;</td>
+	<td>&crab.stats.hourly.requests.statfile;</td>
+</tr>
+<tr>
+	<td>Updates</td>
+	<td>&crab.stats.total.updates;</td>
+	<td>&crab.stats.hourly.updates;</td>
+</tr>
+<tr>
+	<td> - ip</td>
+	<td>&crab.stats.total.updates.ip;</td>
+	<td>&crab.stats.hourly.updates.ip;</td>
+</tr>
+<tr>
+	<td> - url</td>
+	<td>&crab.stats.total.updates.url;</td>
+	<td>&crab.stats.hourly.updates.url;</td>
+</tr>
+<tr>
+	<td>Blocked</td>
+	<td>&crab.stats.total.blocked;</td>
+	<td>&crab.stats.hourly.blocked;</td>
+</tr>
+<tr>
+	<td>Errors</td>
+	<td>&crab.stats.total.errors;</td>
+	<td>&crab.stats.hourly.errors;</td>
+</tr>
+<tr>
+	<td>400s</td>
+	<td>&crab.stats.total.http_400s;</td>
+	<td>&crab.stats.hourly.http_400s;</td>
+</tr>
+<tr>
+	<td>404s</td>
+	<td>&crab.stats.total.http_404s;</td>
+	<td>&crab.stats.hourly.http_404s;</td>
+</tr>
+<tr>
+	<td>Too early</td>
+	<td>&crab.stats.total.too_early;</td>
+	<td>&crab.stats.hourly.too_early;</td>
+</tr>
+<tr>
+	<td>RX</td>
+	<td>&crab.stats.total.rx;</td>
+	<td>&crab.stats.hourly.rx;</td>
+</tr>
+<tr>
+	<td>TX</td>
+	<td>&crab.stats.total.tx;</td>
+	<td>&crab.stats.hourly.tx;</td>
+</tr>
+
+<tr>
+	<td colspan="3">Running since: &crab.startup.time;</td>
+</tr>
+
+</table>
+</td>
+
+</tr>
+</table>
+
+
+<p>&nbsp;</p>
+
+<form method="get" action="&crab.uri;">
+<fieldset style="background: #a87; border: 1pt black solid;">
+<legend>
+<b style="background: #800; padding: 2pt 8pt; border: 1pt black solid;">
+Add a GWebCache URL:
+</b></legend>
+<table>
+<colgroup><col width="50%"><col width="50%"><col><col></colgroup>
+<tr>
+<td class="y"><input name="url" size="64" value="http://"></td>
+<td class="y"><input type="submit" value="Submit URL"></td>
+<td><input type="hidden" name="client" value="USER"></td>
+<td><input type="hidden" name="version" value="1.0"></td>
+<td><input type="hidden" name="net" value="&crab.network.id;"></td>
+</tr>
+</table>
+</fieldset>
+</form>
+
+<div style="x">
+<i><a href="mailto:&crab.contact.address;">Contact</a></i>
+</div>
+
+</body>
+</html>
