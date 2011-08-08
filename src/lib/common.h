@@ -407,11 +407,10 @@ enum {
 #define MAX_URL_SIZE BUFFERSIZE
 
 #define DO_FREE(x) MACRO_BEGIN {         \
-  void **hidden_copy__;  \
-  memcpy(&hidden_copy__, &(x), sizeof hidden_copy__); \
-  if (*hidden_copy__) {         \
-    free(*hidden_copy__);       \
-    *hidden_copy__ = NULL;      \
+  void *hidden_copy__ = (x);  \
+  if (hidden_copy__) {         \
+    free(hidden_copy__);       \
+    x = NULL;      \
   }                             \
 } MACRO_END
 
@@ -522,11 +521,13 @@ typedef struct {
     
     STATIC_ASSERT_PLAIN(sizeof(intptr_t) == sizeof(void *)) ^
     STATIC_ASSERT_PLAIN(sizeof(uintptr_t) == sizeof(void *)) ^
-    
+
+#if 0
     STATIC_ASSERT_PLAIN((uintptr_t)(void *)(intptr_t) -1 == (uintptr_t) -1) ^
     STATIC_ASSERT_PLAIN((uintptr_t)(void *) 0 == 0) ^
     STATIC_ASSERT_PLAIN((intptr_t)(void *) INT_MAX == INT_MAX) ^
     STATIC_ASSERT_PLAIN((uintptr_t)(void *) INT_MAX == INT_MAX) ^
+#endif
     
     STATIC_ASSERT_PLAIN(sizeof(void *) >= sizeof(int)) ^
 

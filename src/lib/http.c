@@ -35,8 +35,8 @@ static const char http_default_useragent_header[] =
 static const char http_default_server_header[] =
   "Server: " HTTP_DEFAULT_USER_AGENT "\r\n";
 
-static const char *http_useragent_header = http_default_useragent_header;
-static const char *http_server_header = http_default_server_header;
+static char *http_useragent_header = (char *) http_default_useragent_header;
+static char *http_server_header = (char *) http_default_server_header;
 
 int
 http_set_useragent(const char *s)
@@ -49,11 +49,11 @@ http_set_useragent(const char *s)
   if (!s) {
     if (http_useragent_header != http_default_useragent_header) {
       DO_FREE(http_useragent_header);
-      http_server_header = http_default_server_header;
+      http_server_header = deconstify_char_ptr(http_default_server_header);
     }
     if (http_server_header != http_default_server_header) {
       DO_FREE(http_server_header);
-      http_useragent_header = http_default_useragent_header;
+      http_useragent_header = deconstify_char_ptr(http_default_useragent_header);
     }
     return 0;
   }

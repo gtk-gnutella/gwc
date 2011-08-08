@@ -92,6 +92,7 @@ fatalsig_handler_dump(int signo)
   char buf[64] = "\n", *p = buf;
   const char *cause = "CRASH";
   size_t i;
+  ssize_t null;
 
   for (i = 0; i < ARRAY_LEN(fatal_sigs); i++) {
     set_signal(fatal_sigs[i].signo, SIG_DFL);
@@ -105,12 +106,15 @@ fatalsig_handler_dump(int signo)
   }
   *p++ = '\n';
   
-  (void) write(STDERR_FILENO, buf, p - buf);
+  null = write(STDERR_FILENO, buf, p - buf);
+  (void) null;
+
   if (OPTION(coredump_directory)) {
     if (chdir(OPTION(coredump_directory))) {
       static const char msg[] = "chdir() failed\n";
 
-      (void) write(STDERR_FILENO, msg, sizeof msg - 1);
+      null = write(STDERR_FILENO, msg, sizeof msg - 1);
+      (void) null;
       _exit(EXIT_FAILURE);
     }
   }
@@ -861,6 +865,11 @@ main(int argc, char *argv[])
 
   (void) argc;
   (void) argv;
+
+  RUNTIME_ASSERT((uintptr_t)(void *)(intptr_t) -1 == (uintptr_t) -1);
+  RUNTIME_ASSERT((uintptr_t)(void *) 0 == 0);
+  RUNTIME_ASSERT((intptr_t)(void *) INT_MAX == INT_MAX);
+  RUNTIME_ASSERT((uintptr_t)(void *) INT_MAX == INT_MAX);
 
   if (fstat(STDIN_FILENO, &sb)) {
     if (!freopen(DEV_NULL, "r", stdin))

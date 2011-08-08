@@ -131,12 +131,14 @@ debug_assert(const struct assert_point *ap)
   };
   struct iovec iov[ARRAY_LEN(sv)], *iov_ptr = iov;
   unsigned i;
+  ssize_t null;
 
   for (i = 0; i < ARRAY_LEN(iov); i++) {
     *iov_ptr++ = iov_from_string(sv[i]);
   }
 
-  (void) writev(STDERR_FILENO, iov, ARRAY_LEN(iov));
+  null = writev(STDERR_FILENO, iov, ARRAY_LEN(iov));
+  (void) null;
   abort();
 }
 
