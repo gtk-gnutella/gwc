@@ -1153,7 +1153,6 @@ http_get_host(const http_t *ctx)
 static int
 http_handle_host_header(http_t *ctx, const char *name, char *value)
 {
-  size_t size;
   char *ep;
 
   RUNTIME_ASSERT(ctx);
@@ -1168,8 +1167,6 @@ http_handle_host_header(http_t *ctx, const char *name, char *value)
   } else {
     ep = value;
   }
-
-  size = 1 + ep - value;
 
   if (':' != *ep) {
     ctx->port = 0;

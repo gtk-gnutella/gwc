@@ -54,13 +54,12 @@ static struct mem_chunk *
 mem_pool_new(size_t size, size_t hold)
 {
   struct mem_chunk *mp;
-  size_t len, ps;
+  size_t len;
   
   RUNTIME_ASSERT(size >= sizeof *mp);
   RUNTIME_ASSERT(0 == size % sizeof *mp);
   RUNTIME_ASSERT(hold > 0);
   
-  ps = compat_getpagesize();
   len = hold * size;
 
   mp = compat_page_align(len);

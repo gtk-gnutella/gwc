@@ -201,6 +201,7 @@ peer_is_acceptable(const net_addr_t addr, in_port_t port)
     return true;
   }
 
+  (void) reason;
 #if 0
   {
     char addr_buf[NET_ADDR_PORT_BUFLEN];
@@ -561,7 +562,6 @@ handle_packet(connection_t *c, const char *data, const size_t data_size,
   bool host_is_full = false;
   bool has_scp = false;
   bool has_vc = false;  /* set if there was a GGEP VC block */
-  uint32_t vc = 0;  /* vendor code */
   int num_ipp_peers = 0;
   peer_t ipp_peers[50];
 
@@ -684,7 +684,7 @@ handle_packet(connection_t *c, const char *data, const size_t data_size,
         if (data_len == 0) {
           /* No hostname given */
         } else {
-          char host[256 + 1], *ep;
+          char host[256 + 1];
           size_t host_size = sizeof host;
           bool truncated = false;
 
@@ -695,7 +695,7 @@ handle_packet(connection_t *c, const char *data, const size_t data_size,
             truncated = true;
           }
 
-          ep = append_string(host, &host_size, p);
+          (void) append_string(host, &host_size, p);
           if (host_size > 1) {
             /* Hostname contained NUL */
           }
@@ -876,7 +876,6 @@ handle_packet(connection_t *c, const char *data, const size_t data_size,
       if (data_len >= ARRAY_LEN(vendor) && !has_vc) {
         size_t i;
 
-        vc = peek_be32(p);
         for (i = 0; i < ARRAY_LEN(vendor) - 1; i++) {
           int ch = (unsigned char) p[i];
           vendor[i] = isalnum(ch) ? ch : '.';
@@ -982,7 +981,6 @@ handle_packet(connection_t *c, const char *data, const size_t data_size,
   case GNET_P_PING:
     {
       struct timeval tv;
-      bool sent_pong = false;
       guid_t guid;
 
       compat_mono_time(&tv);
@@ -1003,7 +1001,7 @@ handle_packet(connection_t *c, const char *data, const size_t data_size,
       } else if (addr_filter && addr_filter_match(addr_filter, sender_addr)) {
         /* Not ponging hostile address */
       } else {
-        sent_pong = uhc_send_pong(&tv, &data[0], sender_addr, sender_port);
+        uhc_send_pong(&tv, &data[0], sender_addr, sender_port);
 
         if (hashtable_fill(ht_pongs) < 1000) {
           uhc_add_to_secondary(&tv, sender_addr, sender_port);

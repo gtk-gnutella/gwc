@@ -1735,9 +1735,7 @@ static void
 client_log_error(connection_t *c, const char *s, int error)
 {
     char addr[NET_ADDR_BUFLEN];
-    client_t *ctx;
 
-    ctx = connection_get_context(c);
     connection_get_addrstr(c, addr, sizeof addr);
     VERB("%s:%u %s%s%s",
         addr,

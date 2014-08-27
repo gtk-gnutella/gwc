@@ -243,8 +243,6 @@ dns_helper_event_write(connection_t *c, ev_type_t ev)
 static void
 dns_helper_event_read(connection_t *c, ev_type_t ev)
 {
-  static struct timeval last_check;
-  struct timeval now;
   client_t *client;
 
   connection_check(c);
@@ -252,7 +250,7 @@ dns_helper_event_read(connection_t *c, ev_type_t ev)
   client_check(client);
   RUNTIME_ASSERT(connection_get_fd(c) == connection_get_fd(dns_query_con));
 
-  now = ev_source_get_stamp(connection_get_source(c));
+  (void) ev_source_get_stamp(connection_get_source(c));
   if (ev & EVT_ERROR) {
     CRIT("%s: shutting down due to error", __func__);
     exit(EXIT_FAILURE);
@@ -315,7 +313,6 @@ dns_helper_event_read(connection_t *c, ev_type_t ev)
       DBUG("Could not resolve hostname");
     }
       
-    last_check = now;
     size = strlen(url) + 1 + sizeof batch;
    
     {
